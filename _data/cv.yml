@@ -3,8 +3,8 @@
   contents:
     - name: Full Name
       value: Michaël Roynard
-    - name: Date of Birth
-      value: 28th November 1989
+    - name: Age
+      value: 33 yo
     - name: Languages
       value: French, English
     - name: Email
@@ -14,21 +14,25 @@
   type: time_table
   contents:
     - title: PhD
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1905
+      institution: Sorbonne Université - Paris 6 / EDITE
+      year: 2022
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
+        - Generic programming in modern C++ for Image Processing
+        - title: Taxonomy of different families of Image processing Algorithms / types
           contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Federal teaching diploma
-      institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
-      year: 1900
+            - Design of a Concept (C++20) framework for an Image processing library
+            - Goal is to conciliate Genericity, efficiency and ease of use.
+        - title: Application of the notions of views (inspired from Milena's morphers and STL's range views) to Image processing
+          contents:
+            - Usage of previously defined concept framework
+            - Well-defined semantic for writability and data ownership, designed for performance (compiler's vectorisation)
+            - New abstraction layer so that Image processing pipelines can be written in term of image instead of in term of pixel.
+    - title: Master degree
+      institution: EISTI - École Internationale des Sciences du Traitement de l'Information - Cergy-Pontoise
+      year: 2015
       description:
-        - Description 1.
-        - Description 2.
+        - Master degree in Computer Science
+        - Engineer in computer sciences and mathematics, specialty I3 - Image, Interaction, Immersion
 
 - title: Experience
   type: time_table
