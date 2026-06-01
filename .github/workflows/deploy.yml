@@ -94,6 +94,7 @@ jobs:
           pip3 install --upgrade nbconvert
           export JEKYLL_ENV=production
           bundle exec jekyll build
+          touch _site/.nojekyll # serve prebuilt _site verbatim on gh-pages (skip Pages safe-mode Jekyll)
       - name: Purge unused CSS 🧹
         run: |
           npm install -g purgecss
