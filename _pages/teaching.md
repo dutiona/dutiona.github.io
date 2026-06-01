@@ -2,14 +2,14 @@
 layout: page
 permalink: /teaching/
 title: teaching
-description: Course materials, schedules, and resources for classes taught.
+description: Courses I teach.
 nav: true
 nav_order: 6
-calendar: true
 ---
 
-This page displays a collection of courses with detailed schedules, materials, and resources. You can organize your courses by years, terms, or topics.
+Teaching activities (several hundred hours, mostly at EPITA):
 
-{% include calendar.liquid calendar_id='test@gmail.com' timezone='Asia/Shanghai' %}
-
-{% include courses.liquid %}
+- **Advanced C++** — master level — 80h
+- **Theory of regular languages** — bachelor level, practical courses — 90h
+- **Algorithms** — bachelor level, practical courses — 60h
+- **Databases** — master level, practical courses — 15h
