@@ -1,0 +1,1915 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>The Missing Knowledge Layer in Cognitive Architectures for AI Agents</title>
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-article.css" type="text/css">
+<link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="keywords" lang="en" content="Cognitive architecture AI agents Memory systems Knowledge representation Persistence semantics LLM agents">
+<meta name="color-scheme" content="light dark">
+<style id="b-disc-darkmode">
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; }
+
+  html, body, .ltx_page_main, .ltx_page_content, .ltx_document {
+    background-color: #0d1117 !important; color: #c9d1d9 !important; }
+  .ltx_title, .ltx_title_document, .ltx_section .ltx_title,
+  h1, h2, h3, h4 { color: #f0f6fc !important; }
+  a, .ltx_ref, .ltx_cite, .ltx_url { color: #58a6ff !important; }
+  .ltx_tabular, .ltx_tr, .ltx_td, .ltx_th,
+  .ltx_border_t, .ltx_border_b, .ltx_border_bb, .ltx_border_tt, .ltx_border_l, .ltx_border_r {
+    border-color: #30363d !important; }
+  svg.ltx_picture [stroke="#000000"] { stroke: #c9d1d9 !important; }
+  svg.ltx_picture [fill="#000000"]   { fill:   #c9d1d9 !important; }
+  svg.ltx_picture foreignObject      { color:  #c9d1d9 !important; }
+  svg.ltx_picture [stroke="#FFFFFF"] { stroke: #0d1117 !important; }
+  img.ltx_graphics, .ltx_figure img, figure img {
+    background: #f6f8fa !important; padding: 0.4em; border-radius: 4px; }
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  html, body, .ltx_page_main, .ltx_page_content, .ltx_document {
+    background-color: #0d1117 !important; color: #c9d1d9 !important; }
+  .ltx_title, .ltx_title_document, .ltx_section .ltx_title,
+  h1, h2, h3, h4 { color: #f0f6fc !important; }
+  a, .ltx_ref, .ltx_cite, .ltx_url { color: #58a6ff !important; }
+  .ltx_tabular, .ltx_tr, .ltx_td, .ltx_th,
+  .ltx_border_t, .ltx_border_b, .ltx_border_bb, .ltx_border_tt, .ltx_border_l, .ltx_border_r {
+    border-color: #30363d !important; }
+  svg.ltx_picture [stroke="#000000"] { stroke: #c9d1d9 !important; }
+  svg.ltx_picture [fill="#000000"]   { fill:   #c9d1d9 !important; }
+  svg.ltx_picture foreignObject      { color:  #c9d1d9 !important; }
+  svg.ltx_picture [stroke="#FFFFFF"] { stroke: #0d1117 !important; }
+  img.ltx_graphics, .ltx_figure img, figure img {
+    background: #f6f8fa !important; padding: 0.4em; border-radius: 4px; }
+}
+/* self-contained nav header — inline-scoped so PurgeCSS (assets/css only) can't strip it */
+#b-disc-nav { font: 0.85rem/1.4 system-ui, sans-serif; padding: 0.5rem 1rem;
+  border-bottom: 1px solid #d0d7de; margin-bottom: 1.5rem; }
+#b-disc-nav a { text-decoration: none; color: #0969da; }
+@media (prefers-color-scheme: dark) {
+  #b-disc-nav { border-color: #30363d; } #b-disc-nav a { color: #58a6ff; } }
+html[data-theme="dark"] #b-disc-nav { border-color: #30363d; }
+html[data-theme="dark"] #b-disc-nav a { color: #58a6ff; }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ScholarlyArticle",
+  "headline": "The Missing Knowledge Layer in Cognitive Architectures for AI Agents",
+  "name": "The Missing Knowledge Layer in Cognitive Architectures for AI Agents",
+  "url": "https://dutiona.github.io/papers/missing-knowledge-layer/",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Michaël Roynard"
+    }
+  ],
+  "description": "The two most influential cognitive architecture frameworks for AI agents, CoALA and JEPA, both lack an explicit Knowledge layer with its own persistence semantics. This gap produces a category error: systems apply cognitive decay to factual claims, or treat facts and experiences with identical update mechanics. We survey persistence semantics across existing memory systems and identify eight convergence points, from Karpathy's LLM Knowledge Base to the BEAM benchmark's near-zero contradiction-resolution scores, all pointing to related architectural gaps. We propose a four-layer decomposition (Knowledge, Memory, Wisdom, Intelligence) where each layer has fundamentally different persistence semantics: indefinite supersession, Ebbinghaus decay, evidence-gated revision, and ephemeral inference respectively. Companion implementations in Python and Rust demonstrate the architectural separation is feasible. We borrow terminology from cognitive science as a useful analogy (the Knowledge/Memory distinction echoes Tulving's trichotomy), but our layers are engineering constructs justified by persistence-semantics requirements, not by neural architecture. We argue that these distinctions demand distinct persistence semantics in engineering implementations, and that no current framework or system provides this.",
+  "datePublished": "2026"
+}
+</script>
+</head>
+<body>
+<nav id="b-disc-nav"><a href="https://dutiona.github.io/">← Return to dutiona.github.io</a></nav>
+<div class="ltx_page_main">
+<div class="ltx_page_content">
+<article class="ltx_document ltx_authors_1line"><span class="ltx_note ltx_role_institutetext"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup><span class="ltx_note_type">institutetext: </span>Independant Researcher
+<br class="ltx_break"><span class="ltx_note ltx_role_email"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup><span class="ltx_note_type">email: </span>michael.roynard@proton.me</span></span></span></span></span></span>
+<h1 class="ltx_title ltx_title_document">The Missing Knowledge Layer in Cognitive Architectures for AI Agents</h1>
+<div class="ltx_authors">
+<span class="ltx_creator ltx_role_author">
+<span class="ltx_personname">Michaël Roynard
+</span><span class="ltx_author_notes">
+<span class="ltx_contact ltx_role_orcid"><a href="https://orcid.org/0000-0001-8469-4131" title="ORCID identifier" class="ltx_ref">0000-0001-8469-4131</a></span>
+</span></span>
+</div>
+
+<div class="ltx_abstract">
+<h6 class="ltx_title ltx_title_abstract">Abstract</h6>
+    
+<p class="ltx_p">The two most influential cognitive architecture frameworks for AI agents,
+CoALA <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib34" title="" class="ltx_ref">34</a>]</cite> and JEPA <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib17" title="" class="ltx_ref">17</a>]</cite>, both lack
+an explicit <span class="ltx_text ltx_font_smallcaps">Knowledge</span> layer with its own persistence semantics. This
+gap produces a category error: systems apply cognitive decay to factual
+claims, or treat facts and experiences with identical update mechanics. We
+survey persistence semantics across existing memory systems and identify
+eight convergence points, from Karpathy’s LLM Knowledge
+Base <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib15" title="" class="ltx_ref">15</a>]</cite> to the BEAM benchmark’s near-zero
+contradiction-resolution scores <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib35" title="" class="ltx_ref">35</a>]</cite>, all pointing to
+related architectural gaps. We propose a four-layer decomposition
+(<span class="ltx_text ltx_font_smallcaps">Knowledge</span>, <span class="ltx_text ltx_font_smallcaps">Memory</span>, <span class="ltx_text ltx_font_smallcaps">Wisdom</span>, <span class="ltx_text ltx_font_smallcaps">Intelligence</span>) where each layer has
+fundamentally different persistence semantics: indefinite supersession,
+Ebbinghaus decay, evidence-gated revision, and ephemeral inference
+respectively. Companion implementations in Python and Rust demonstrate the
+architectural separation is feasible. We borrow terminology from cognitive
+science as a useful analogy (the Knowledge/Memory distinction echoes Tulving’s
+trichotomy), but our layers are engineering constructs justified by
+persistence-semantics requirements, not by neural architecture. We argue that
+these distinctions demand distinct persistence semantics in engineering
+implementations, and that no current framework or system provides this.</p>
+  
+</div>
+<div class="ltx_keywords">
+<h6 class="ltx_title ltx_title_keywords">Keywords: </h6>Cognitive architecture AI agents Memory systems Knowledge representation Persistence semantics LLM agents
+</div>
+<section id="S1" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">1 </span>Introduction</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">The field of AI agent memory has produced a remarkable proliferation of
+systems, from graph-augmented vector
+stores <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib31" title="" class="ltx_ref">31</a>, <a href="#bib.bib8" title="" class="ltx_ref">8</a>]</cite>, OS-inspired virtual
+context managers <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib28" title="" class="ltx_ref">28</a>]</cite>, unified KV+vector+graph
+engines <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib1" title="" class="ltx_ref">1</a>]</cite>, and self-organizing memory
+networks <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib38" title="" class="ltx_ref">38</a>]</cite>, all attempting to give large
+language models persistent state that survives beyond the context window.
+We argue that the majority of these systems share a fundamental
+<em class="ltx_emph ltx_font_italic">category error</em>: they conflate knowledge with memory, applying
+cognitive decay to factual claims that are not subject to forgetting.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Let us consider NornicDB <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib25" title="" class="ltx_ref">25</a>]</cite>, a graph and vector
+database targeting AI agents. It implements a three-tier cognitive decay
+model: episodic memories receive a 7-day half-life, semantic memories a
+69-day half-life, and procedural memories a 693-day half-life. The intent
+is biologically inspired. However, a paper’s findings do not become less
+true after 69 days. A relationship between two concepts does not fade
+after a calendar month. What decays is the agent’s <em class="ltx_emph ltx_font_italic">attentional
+relevance</em> to the information (a memory concern, not a knowledge
+concern). This system conflates “I have not accessed this recently”
+with “this is less valuable,” and those are categorically different
+propositions.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Indeed, the conflation is pervasive. Mem0 <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib8" title="" class="ltx_ref">8</a>]</cite>
+applies identical CRUD operations to facts and experiences.
+Signet <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib24" title="" class="ltx_ref">24</a>]</cite> builds a sophisticated entity-aspect-attribute
+graph with partial supersession but applies uniform <math id="S1.p3.m1" class="ltx_Math" alttext="0.95^{\text{days}}" display="inline"><msup><mn>0.95</mn><mtext>days</mtext></msup></math>
+decay to all content types. Ori Mnemos <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib27" title="" class="ltx_ref">27</a>]</cite> implements
+three-zone decay rates but stores all data types in one graph without
+formal layer separation. The cost of this conflation is twofold: systems
+either <em class="ltx_emph ltx_font_italic">forget what they should remember</em> (NornicDB applying
+storage-level decay to permanent facts) or <em class="ltx_emph ltx_font_italic">remember what they
+should forget</em> (Hindsight <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib16" title="" class="ltx_ref">16</a>]</cite> persisting
+everything forever without decay).</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">This category error is not confined to production systems. The two most
+influential cognitive architecture frameworks for AI agents both exhibit
+it. CoALA <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib34" title="" class="ltx_ref">34</a>]</cite> identifies “semantic memory” but does
+not distinguish its persistence semantics from episodic memory.
+JEPA <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib17" title="" class="ltx_ref">17</a>]</cite> has no <span class="ltx_text ltx_font_smallcaps">Knowledge</span> layer at all.</p>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">The gap is increasingly visible to practitioners. In April 2026, six
+independent community voices articulated the same diagnosis within a
+single week on Reddit, spanning three distinct concern tiers. At the
+<em class="ltx_emph ltx_font_italic">implementer</em> tier, the author of a compile-upfront knowledge wiki
+acknowledged that “the compiled layer can drift and start feeling
+stale,” motivating the need for a <span class="ltx_text ltx_font_smallcaps">Memory</span> layer alongside
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span>.<span id="footnote1" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup>
+            <span class="ltx_tag ltx_tag_note">1</span>
+            
+            
+            
+            
+            
+            
+          r/Rag, April 2026, u/Astro-Han.</span></span></span> A top-voted
+reply to a separate knowledge-compilation thread argued: “you need to
+add a memory layer to your setup, whether it be a bunch of MEMORY.md
+files or something fancier. The two work in
+tandem.”<span id="footnote2" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">2</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">2</sup>
+            <span class="ltx_tag ltx_tag_note">2</span>
+            
+            
+            
+            
+            
+            
+          r/Rag, April 2026, u/schneeble_schnobble (+13
+upvotes).</span></span></span> At the <em class="ltx_emph ltx_font_italic">architect</em> tier, a practitioner stated the
+design principle concisely: “treat ingestion and interpretation as
+probabilistic, but keep storage, state transitions, and supersession
+deterministic […] ontology rules, temporal semantics, and explicit
+update policies decide how new information affects existing
+knowledge.”<span id="footnote3" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">3</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">3</sup>
+            <span class="ltx_tag ltx_tag_note">3</span>
+            
+            
+            
+            
+            
+            
+          r/Rag, April 2026, u/JonnyJF.</span></span></span> At the
+<em class="ltx_emph ltx_font_italic">governance</em> tier, an enterprise knowledge architect framed the
+problem as: “what is allowed to compound, what is only a projection,
+and what remains the source of record?” with the invariant that
+“projections never silently become the truth they
+summarize.”<span id="footnote4" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">4</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">4</sup>
+            <span class="ltx_tag ltx_tag_note">4</span>
+            
+            
+            
+            
+            
+            
+          r/Rag, April 2026, anonymous OP.</span></span></span> These are
+anecdotal signals, not peer-reviewed evidence, but their density and
+independence suggest that the architectural gap is recognizable by
+practitioners across experience levels.</p>
+</div>
+<div id="S1.p6" class="ltx_para">
+<p class="ltx_p">We analyze
+the framework gaps (<a href="#S2" title="2 Background ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">2</span></a>), propose a four-layer decomposition
+with distinct persistence semantics per layer (<a href="#S3" title="3 The Four-Layer Decomposition ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">3</span></a>),
+present convergence evidence from 9 independent sources
+(<a href="#S4" title="4 Convergence Evidence ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">4</span></a>), briefly describe companion implementations
+(<a href="#S5" title="5 Companion Implementations ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">5</span></a>), and discuss limitations and future work
+(<a href="#S6" title="6 Discussion and Limitations ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">6</span></a>).</p>
+</div>
+</section>
+<section id="S2" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">2 </span>Background</h2>
+
+<section id="S2.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.1 </span>Cognitive Science Foundations</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">The four-layer decomposition we propose is an engineering construct, not
+a neuroscience model. Nevertheless, it draws on well-established
+dissociations in cognitive psychology that motivate treating different
+kinds of persistent state differently.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib36" title="" class="ltx_ref">36</a>]</cite> introduced the canonical
+episodic-versus-semantic memory distinction: semantic memory stores
+general world knowledge “not tied to a specific episode,” while
+episodic memory is event-bound with sensory, temporal, and spatial
+anchoring. This dissociation is the psychological foundation for our
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span>/<span class="ltx_text ltx_font_smallcaps">Memory</span> split.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib9" title="" class="ltx_ref">9</a>]</cite> demonstrated the procedural-versus-declarative
+dissociation through amnesia studies: patients with damaged hippocampi
+can learn new motor skills while being unable to form new declarative
+memories, establishing that “knowing how” and “knowing that” are
+architecturally distinct. This validates treating <span class="ltx_text ltx_font_smallcaps">Wisdom</span> (procedural,
+action-shaping) as a separate layer from <span class="ltx_text ltx_font_smallcaps">Knowledge</span> and <span class="ltx_text ltx_font_smallcaps">Memory</span>
+(both declarative).
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib5" title="" class="ltx_ref">5</a>]</cite> reframed forgetting as an adaptive
+retrieval-inhibition mechanism rather than a failure, the position our
+<span class="ltx_text ltx_font_smallcaps">Memory</span> layer’s Ebbinghaus decay adopts.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib23" title="" class="ltx_ref">23</a>]</cite> introduced metamemory (knowledge about
+one’s own memory processes), which maps onto the <span class="ltx_text ltx_font_smallcaps">Wisdom</span> layer’s
+self-referential capability.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib20" title="" class="ltx_ref">20</a>]</cite> synthesized the prospective memory
+literature, distinguishing time-based from event-based intention
+triggering, both of which our <span class="ltx_text ltx_font_smallcaps">Memory</span> layer addresses.
+These references are the same cognitive-science foundations that
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib6" title="" class="ltx_ref">6</a>]</cite> cite in their recent DeepMind Cognitive
+Framework, providing independent anchoring for our architectural
+choices.</p>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.2 </span>CoALA</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">CoALA <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib34" title="" class="ltx_ref">34</a>]</cite> provides the most comprehensive taxonomy of
+cognitive capabilities for language agents, decomposing agent cognition
+into working memory, episodic memory, semantic memory, and procedural
+memory, directly inspired by Tulving’s
+trichotomy <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib13" title="" class="ltx_ref">13</a>, <a href="#bib.bib14" title="" class="ltx_ref">14</a>]</cite>. The framework has become the standard
+reference for reasoning about agent memory architecture.</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">However, CoALA does not distinguish the <em class="ltx_emph ltx_font_italic">persistence semantics</em> of
+semantic memory from episodic memory. Both are classified as “long-term
+memory” with no formal difference in update mechanism, ownership scope,
+or decay behavior. Under CoALA, the fact “LoRA achieves 95% of full
+fine-tuning quality” and the experience “user corrected me about LoRA
+yesterday” inhabit the same architectural category. Yet the first is a
+permanent claim that should be superseded (not forgotten) when newer
+evidence arrives, while the second is an ephemeral experience that should
+decay unless consolidated into a durable behavioral pattern. Simply said,
+CoALA’s taxonomy correctly <em class="ltx_emph ltx_font_italic">names</em> the distinction (semantic vs. episodic) but does not <em class="ltx_emph ltx_font_italic">operationalize</em> it with different persistence
+mechanics.</p>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">2.3 </span>JEPA</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">LeCun’s “A Path Towards Autonomous Machine
+Intelligence” <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib17" title="" class="ltx_ref">17</a>]</cite> proposes a six-module cognitive
+architecture (Perception, World Model, Cost Module, Short-Term Memory,
+Actor, and Configurator) centered on the Joint Embedding Predictive
+Architecture. The paper is among the most cited position papers in recent
+AI research.</p>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<p class="ltx_p">JEPA has <span class="ltx_text ltx_font_bold">no Knowledge layer</span>. Factual knowledge about the world
+is either (a) compressed into World Model weights (lossy, unattributable,
+and requiring retraining to update) or (b) held transiently in the
+Short-Term Memory buffer (ephemeral, lost on clearance). There is no
+persistent, shared, source-attributed factual store. The architecture
+provides no mechanism for supersession (recording that a new claim
+improves upon an old one while preserving both), no provenance tracking,
+and no shared factual store across agents.</p>
+</div>
+<div id="S2.SS3.p3" class="ltx_para">
+<p class="ltx_p">Independent critical reviews strengthen this analysis.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib18" title="" class="ltx_ref">18</a>]</cite> identifies that JEPA’s configurator is
+underspecified, the System 1/System 2 mapping is incorrect, and
+Hierarchical JEPA is incompatible with predictive coding.
+<cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib4" title="" class="ltx_ref">4</a>]</cite> shows that memory is load-bearing for JEPA’s
+critic: the Cost Module is “trained from past states and subsequent
+intrinsic cost, <em class="ltx_emph ltx_font_italic">retrieved from memory</em>.” The critic cannot evaluate
+predicted states without access to historical experience, yet JEPA’s
+Short-Term Memory is an unstructured buffer with no decay policy, no
+temporal indexing, and no consolidation mechanism.</p>
+</div>
+<div id="S2.SS3.p4" class="ltx_para">
+<p class="ltx_p">It is important to note that JEPA’s stated scope is learning architecture
+(self-supervised learning via joint embeddings), not agent memory
+infrastructure. The gap we identify becomes relevant when JEPA-like
+architectures are deployed as cognitive cores for persistent agents: facts
+about the world need a home that is neither lossy weight compression nor
+ephemeral buffer state. CoALA at least <em class="ltx_emph ltx_font_italic">identifies</em> semantic memory
+as a distinct category, even though it does not separate its persistence
+semantics. JEPA does not address persistence at all, which is appropriate
+for its scope but insufficient for agent deployment.</p>
+</div>
+</section>
+</section>
+<section id="S3" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">3 </span>The Four-Layer Decomposition</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">We propose that the cognitive substrate of AI agents decomposes into four
+layers, each with fundamentally different persistence semantics, update
+mechanisms, and ownership scopes (<a href="#S3.T1" title="In 3 The Four-Layer Decomposition ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">table</span> <span class="ltx_text ltx_ref_tag">1</span></a>,
+<a href="#S3.F1" title="In 3 The Four-Layer Decomposition ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">fig.</span> <span class="ltx_text ltx_ref_tag">1</span></a>).</p>
+</div>
+<figure id="S3.T1" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 1: </span>Four-layer decomposition with persistence semantics. Each layer
+requires a different update mechanism. Treating any two identically
+produces the category error described in <a href="#S1" title="1 Introduction ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">1</span></a>.</figcaption>
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt">
+<span class="ltx_text" style="font-size:90%;"> </span><span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_middle">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Layer</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_tt">
+<span class="ltx_text" style="font-size:90%;"> </span><span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_middle">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Definition</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_tt">
+<span class="ltx_text" style="font-size:90%;"> </span><span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_middle">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Persistence</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_tt">
+<span class="ltx_text" style="font-size:90%;"> </span><span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_middle">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Update</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_tt">
+<span class="ltx_text" style="font-size:90%;"> </span><span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_middle">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Scope</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Knowledge</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">What is</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">true</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Indefinite;</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">supersession</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Append-only</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">+ provenance</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text" style="font-size:90%;">Shared</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Memory</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">What</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">happened</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Ebbinghaus</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">decay</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Bi-temporal</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">event sourcing</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text" style="font-size:90%;">Per-agent</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Wisdom</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">What</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">works</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Durable;</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">revision-gated</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Evidence-threshold</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">review</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text" style="font-size:90%;">Multi-source</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Intelligence</span></td>
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Capacity</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">to reason</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Ephemeral</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">(inference-time)</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t"><span class="ltx_text" style="font-size:90%;">N/A</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_bb ltx_border_t"><span class="ltx_text" style="font-size:90%;">Per-invocation</span></td>
+</tr>
+</table>
+</figure>
+<figure id="S3.F1" class="ltx_figure"><img src="x1.png" id="S3.F1.g1" class="ltx_graphics ltx_centering ltx_img_landscape" width="831" height="315" alt="Refer to caption">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1: </span>Four-layer cognitive architecture. Solid arrows (top) denote
+working pipelines active during inference. Dashed arrows (bottom) denote
+offline consolidation pipelines. The layers are co-equal substrates with
+distinct persistence semantics, not a strict hierarchy.</figcaption>
+</figure>
+<section id="S3.SS0.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Knowledge: “what is true about the world.”</h4>
+
+<div id="S3.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Knowledge is factual, structural, and permanent. Facts do not expire;
+they get <em class="ltx_emph ltx_font_italic">superseded</em> by newer evidence, which is a qualitatively
+different operation from forgetting. Let us consider a research agent that
+has ingested Paper A: “LoRA achieves 95% of full fine-tuning quality at
+0.1% parameters” and later Paper B: “DoRA achieves 97% at 0.08%
+parameters.” In a system that conflates knowledge and memory, Paper A’s
+claim would decay over time, losing retrievability simply because days
+have elapsed. However, Paper A’s finding has not become false. The correct
+operation is <em class="ltx_emph ltx_font_italic">supersession</em>: recording the relationship between the
+two claims and marking one as improved upon, while preserving both for
+provenance and historical queries. Knowledge is shared across agents (any
+agent querying the knowledge base sees the same facts) and carries
+provenance: who said it, when, based on what evidence.</p>
+</div>
+</section>
+<section id="S3.SS0.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Memory: “what happened, what I was told.”</h4>
+
+<div id="S3.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Memory is experiential, per-agent, and ephemeral by default. It decays
+naturally following a forgetting curve <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib37" title="" class="ltx_ref">37</a>]</cite> unless
+consolidated. We use Ebbinghaus decay as a simplifying approximation; the
+cognitive forgetting literature is considerably richer (interference-based
+forgetting, reconsolidation, sleep-dependent consolidation). The
+architectural point is that <span class="ltx_text ltx_font_smallcaps">Memory</span> requires <em class="ltx_emph ltx_font_italic">some</em> decay
+mechanism, while <span class="ltx_text ltx_font_smallcaps">Knowledge</span> requires none. One-time observations should not permanently consume
+retrieval bandwidth, while recurring patterns should accumulate enough
+reinforcement to survive forgetting. Also, memory is context-scoped:
+memory about project A should not bleed into project B. Every memory
+operation produces an immutable event in an append-only event log, with
+four timestamps following Graphiti’s bi-temporal
+model <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib31" title="" class="ltx_ref">31</a>]</cite>: system-created, system-expired,
+real-world-valid, and real-world-invalid. This distinction between “when
+did we learn this” and “when was this actually true” is essential for
+resolving temporal conflicts.</p>
+</div>
+</section>
+<section id="S3.SS0.SSS0.Px3" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Wisdom: “what works, learned from experience.”</h4>
+
+<div id="S3.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Wisdom consists of pre-compiled behavioral patterns, that is, generalized
+lessons extracted from experience. The primary criterion that distinguishes
+<span class="ltx_text ltx_font_smallcaps">Wisdom</span> from <span class="ltx_text ltx_font_smallcaps">Knowledge</span> is the <em class="ltx_emph ltx_font_italic">update mechanism</em>, not the
+content type. <span class="ltx_text ltx_font_smallcaps">Knowledge</span> updates via <em class="ltx_emph ltx_font_italic">supersession</em>: when a new
+claim contradicts an old one, both are preserved and linked, with the old
+claim marked as superseded. <span class="ltx_text ltx_font_smallcaps">Wisdom</span> updates via <em class="ltx_emph ltx_font_italic">evidence-gated
+revision</em>: a behavioral directive can only be promoted or modified when
+structured evidence (corroboration count, session span, contradiction
+absence) crosses a threshold. These are different storage operations that
+require different implementations. Content type serves as a secondary
+heuristic: verifiable, source-attributed claims default to <span class="ltx_text ltx_font_smallcaps">Knowledge</span>,
+while behavioral directives derived from experience default to <span class="ltx_text ltx_font_smallcaps">Wisdom</span>.</p>
+</div>
+<div id="S3.SS0.SSS0.Px3.p2" class="ltx_para">
+<p class="ltx_p">For the sake of clarity, let us consider four boundary cases.
+(1) “User prefers dark mode” is <span class="ltx_text ltx_font_smallcaps">Knowledge</span> (a verifiable fact, updated
+by supersession if the preference changes).
+(2) “When the user asks about UI, check theme preferences first” is
+<span class="ltx_text ltx_font_smallcaps">Wisdom</span> (a behavioral directive, updated by evidence-gated revision).
+(3) “The user mentioned dark mode yesterday” is <span class="ltx_text ltx_font_smallcaps">Memory</span> (an ephemeral
+observation that should decay unless the pattern recurs).
+(4) “Gradient clipping above 1.0 destabilizes training on ResNet-50” is
+ambiguous: it is both a verifiable empirical finding (<span class="ltx_text ltx_font_smallcaps">Knowledge</span>) and a
+potential behavioral directive (<span class="ltx_text ltx_font_smallcaps">Wisdom</span>). We resolve this by noting that
+the <em class="ltx_emph ltx_font_italic">fact</em> belongs in <span class="ltx_text ltx_font_smallcaps">Knowledge</span> (with supersession if new evidence
+contradicts it), while the <em class="ltx_emph ltx_font_italic">derived directive</em> (“set gradient
+clipping to 1.0 or below”) belongs in <span class="ltx_text ltx_font_smallcaps">Wisdom</span> (with evidence-gated
+revision). The same observation can produce entries in both layers with
+different persistence semantics, and this is by design: the fact persists
+indefinitely, while the directive can be revised when the practitioner’s
+context changes. An alternative design would collapse <span class="ltx_text ltx_font_smallcaps">Knowledge</span> and
+<span class="ltx_text ltx_font_smallcaps">Wisdom</span> into a single layer with a stability-tier field and a
+source-attribution flag. This is a viable simplification, but it forces a
+single update mechanism to handle both supersession and evidence-gated
+revision, which we argue are semantically distinct operations.</p>
+</div>
+<div id="S3.SS0.SSS0.Px3.p3" class="ltx_para">
+<p class="ltx_p">Wisdom does not decay:
+“never store secrets in git” does not become less wise over time.
+However, wisdom updates via <em class="ltx_emph ltx_font_italic">explicit revision</em>, not gradual fading.
+When a behavioral pattern is superseded (<em class="ltx_emph ltx_font_italic">e.g.</em>, a user changes their preferred
+test framework), the old pattern is retired with provenance and the new
+pattern is installed.</p>
+</div>
+<div id="S3.SS0.SSS0.Px3.p4" class="ltx_para">
+<p class="ltx_p">Concretely, revision-gating assigns each wisdom entry a stability tier
+based on corroborating evidence: entries derived from a single episode are
+<em class="ltx_emph ltx_font_italic">predictions</em> (free to churn), entries corroborated across three or
+more independent sessions stabilize as <em class="ltx_emph ltx_font_italic">core</em> patterns, and entries
+that persist without contradiction across ten or more consolidation cycles
+earn <em class="ltx_emph ltx_font_italic">anchor</em> status and resist modification. These thresholds are
+configurable and empirically motivated by BaseLayer’s finding that 20% of
+facts produces equivalent behavioral fidelity to
+100% <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib3" title="" class="ltx_ref">3</a>]</cite>. This tiered model is also motivated
+by <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib7" title="" class="ltx_ref">7</a>]</cite>, who show that RLHF-trained
+models affirm user behavior 50% more than humans, and users rate
+sycophantic AI 9–15% higher even after disclosure. Gating on approval
+alone would let sycophantic models promote agreeable-but-incorrect
+patterns. Gating on structured evidence prevents this.</p>
+</div>
+</section>
+<section id="S3.SS0.SSS0.Px4" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Intelligence: “the capacity to reason, plan, and act.”</h4>
+
+<div id="S3.SS0.SSS0.Px4.p1" class="ltx_para">
+<p class="ltx_p">Intelligence is ephemeral. It exists only at inference time and leaves no
+direct trace; its effects persist only through the other three layers.
+Intelligence orchestrates: it queries knowledge, recalls memory, applies
+wisdom, uses tools, and synthesizes a response. Two simultaneous sessions
+share no intelligence state.</p>
+</div>
+</section>
+<section id="S3.SS0.SSS0.Px5" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">The organizing principle.</h4>
+
+<div id="S3.SS0.SSS0.Px5.p1" class="ltx_para">
+<p class="ltx_p">The key design litmus that emerges from this decomposition is the
+distinction between <em class="ltx_emph ltx_font_italic">storage-level</em> and <em class="ltx_emph ltx_font_italic">query-time</em> properties.
+Recency is a query-time heuristic (the <span class="ltx_text ltx_font_smallcaps">Intelligence</span> layer can boost
+recent results when recency matters). Decay is a storage-level mechanism
+(the <span class="ltx_text ltx_font_smallcaps">Memory</span> layer applies Ebbinghaus forgetting to experiential facts).
+Confusing the two produces systems like NornicDB where knowledge is
+subjected to storage-level decay when recency should be a query-time
+filter. A system that treats all four layers with identical storage and
+retrieval semantics will predictably mishandle at least three of them.</p>
+</div>
+</section>
+</section>
+<section id="S4" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">4 </span>Convergence Evidence</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">The four-layer decomposition is not merely a theoretical proposal.
+Multiple independent sources, spanning academic benchmarks, production
+systems, industrial-lab reports, and practitioner projects, converge on
+related architectural gaps without coordinating
+(<a href="#S4.T2" title="In 4 Convergence Evidence ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">table</span> <span class="ltx_text ltx_ref_tag">2</span></a>). We note that these sources share intellectual
+heritage (several trace to Tulving’s trichotomy), so the convergence is
+downstream of common ancestors rather than fully independent.
+Nevertheless, the pattern is suggestive: each source independently
+discovers that flat persistence semantics are insufficient, even if none
+proposes the same four-layer resolution we do.</p>
+</div>
+<figure id="S4.T2" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 2: </span>Convergence points. Each source independently discovers or
+validates a component of the four-layer decomposition. The “What’s
+missing” column shows which layers or persistence semantics the source
+still lacks.</figcaption>
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Source</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold" style="font-size:90%;">What they found</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold" style="font-size:90%;">What’s missing</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" colspan="3"><em class="ltx_emph ltx_font_italic" style="font-size:90%;">Published / peer-reviewed</em></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">DeepMind Cognitive</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Framework <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib6" title="" class="ltx_ref">6</a>]</cite></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">10-faculty taxonomy; Working Memory under Executive Functions, not Memory; memory/learning distinction</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">Taxonomy only; no persistence semantics, no implementation</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Hindsight </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib16" title="" class="ltx_ref">16</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">5-level data hierarchy (entities </span><math id="S4.T2.m1" class="ltx_Math" alttext="\to" display="inline"><mo mathsize="90%" stretchy="false">→</mo></math><span class="ltx_text" style="font-size:90%;"> facts </span><math id="S4.T2.m2" class="ltx_Math" alttext="\to" display="inline"><mo mathsize="90%" stretchy="false">→</mo></math><span class="ltx_text" style="font-size:90%;"> observations </span><math id="S4.T2.m3" class="ltx_Math" alttext="\to" display="inline"><mo mathsize="90%" stretchy="false">→</mo></math><span class="ltx_text" style="font-size:90%;"> mental models), BEAM SOTA 64.1%/10M tokens</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No forgetting, no decay, no bi-temporal, no supersession</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">BEAM </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib35" title="" class="ltx_ref">35</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">Contradiction resolution </span><math id="S4.T2.m4" class="ltx_Math" alttext="{&lt;}0.05" display="inline"><mrow><mi></mi><mo mathsize="90%">&lt;</mo><mn mathsize="90%">0.05</mn></mrow></math><span class="ltx_text" style="font-size:90%;">, temporal reasoning </span><math id="S4.T2.m5" class="ltx_Math" alttext="0.12" display="inline"><mn mathsize="90%">0.12</mn></math><span class="ltx_text" style="font-size:90%;"> across </span><em class="ltx_emph ltx_font_italic" style="font-size:90%;">all</em><span class="ltx_text" style="font-size:90%;"> systems at 10M tokens</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">Reveals gap, does not propose architectural solution</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Gulli &amp; Sauco</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left"><cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib11" title="" class="ltx_ref">11</a>]</cite></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">Google CTO reference (424p, Springer): two-tier memory (context + vector store)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No temporal model, no forgetting, no </span><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Wisdom</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" colspan="3"><em class="ltx_emph ltx_font_italic" style="font-size:90%;">Industry / production systems</em></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Karpathy LLM KB </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib15" title="" class="ltx_ref">15</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Knowledge</span><span class="ltx_text" style="font-size:90%;"> layer: compilation, querying, maintenance loops (April 2026)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No </span><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Memory</span><span class="ltx_text" style="font-size:90%;">, no </span><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Wisdom</span><span class="ltx_text" style="font-size:90%;">, no temporal semantics</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Claude Code </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib3" title="" class="ltx_ref">3</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">4-type taxonomy (user/feedback/project/reference), 4-stage consolidation pipeline</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No supersession, no temporal validity, no structured facts</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Mengram </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib2" title="" class="ltx_ref">2</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">Independent Tulving trichotomy: separate pipelines for semantic/episodic/procedural</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No persistence semantics per type</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Mastra OM </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib19" title="" class="ltx_ref">19</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">LongMemEval SOTA (94.87%); multi-session ceiling at 87.2% across all systems</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No cross-session persistence, no supersession, no layer separation</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">Google AOMA </span><cite class="ltx_cite ltx_citemacro_cite"><span class="ltx_text" style="font-size:90%;">[</span><a href="#bib.bib33" title="" class="ltx_ref">33</a><span class="ltx_text" style="font-size:90%;">]</span></cite>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_bb ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">LLM-driven 30-min consolidation loops generating meta-insights from raw memories</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_justify ltx_border_bb ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text" style="font-size:90%;">No temporal model, no forgetting, no layer separation, O(</span><math id="S4.T2.m6" class="ltx_Math" alttext="n" display="inline"><mi mathsize="90%">n</mi></math><span class="ltx_text" style="font-size:90%;">) retrieval</span></span>
+</span>
+</td>
+</tr>
+</table>
+</figure>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">The pattern across these convergence points is consistent: teams and
+practitioners independently discover the <em class="ltx_emph ltx_font_italic">need</em> for typed cognitive
+data with different persistence semantics, but no existing system provides
+the full decomposition. Karpathy builds a <span class="ltx_text ltx_font_smallcaps">Knowledge</span> layer while missing
+the other three. Hindsight builds the most sophisticated retrieval system
+(BEAM SOTA at 64.1%) yet persists everything forever with no decay and no
+supersession. Claude Code’s 4-type taxonomy partially distinguishes
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span> from <span class="ltx_text ltx_font_smallcaps">Memory</span> but stores both as markdown blobs with
+identical persistence semantics. Also, two recent systems independently
+validate consolidation as a first-class operation: Mastra’s Observational
+Memory <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib19" title="" class="ltx_ref">19</a>]</cite> achieves LongMemEval SOTA via compression
+rather than retrieval, but hits a multi-session ceiling at 87.2% because
+observations vanish when the session ends (no persistent <span class="ltx_text ltx_font_smallcaps">Memory</span> layer).
+Google’s Always-On Memory Agent <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib33" title="" class="ltx_ref">33</a>]</cite> runs 30-minute LLM
+consolidation loops that generate meta-insights from raw memories,
+independently converging on the DreamCycle concept we formalize, but
+without temporal modeling, forgetting, or layer separation.</p>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Furthermore, practitioner communities have independently arrived at
+similar distinctions. On the r/AIMemory forum, one user unpromptedly
+distinguished wisdom from memory: “It sounds like you’re describing
+‘wisdom’ which is another component alongside
+memory.”<span id="footnote5" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">5</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">5</sup>
+            <span class="ltx_tag ltx_tag_note">5</span>
+            
+            
+            
+            
+            
+            
+          r/AIMemory, “Memory as a Harness: Turning Execution
+Into Learning,” March 2026, user avwgtiguy.</span></span></span> Another observed that
+existing benchmarks “test whether a system can find or apply what was
+said,” not “whether it actually built coherent
+knowledge.”<span id="footnote6" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">6</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">6</sup>
+            <span class="ltx_tag ltx_tag_note">6</span>
+            
+            
+            
+            
+            
+            
+          r/AIMemory, benchmark discussion thread,
+March 2026, user PenfieldLabs. See also their LoCoMo audit:
+<a href="https://github.com/dial481/locomo-audit" title="" class="ltx_ref">https://github.com/dial481/locomo-audit</a>.</span></span></span> A third proposed that
+“memory retrieval should be model-agnostic, and the harness layer handles
+formatting/routing,” independently validating the consumer trait
+abstraction.<span id="footnote7" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">7</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">7</sup>
+            <span class="ltx_tag ltx_tag_note">7</span>
+            
+            
+            
+            
+            
+            
+          r/AIMemory, same thread as footnote 1, user
+Time-Dot-1808.</span></span></span>
+These are anecdotal signals, not peer-reviewed evidence, but they suggest
+that the gap is recognizable by practitioners without exposure to our
+framework.</p>
+</div>
+<div id="S4.p4" class="ltx_para">
+<p class="ltx_p">The BEAM benchmark <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib35" title="" class="ltx_ref">35</a>]</cite> provides the strongest
+empirical evidence. At 10M tokens (where context stuffing physically
+cannot work), the abilities where <em class="ltx_emph ltx_font_italic">all</em> systems score worst are
+contradiction resolution (<math id="S4.p4.m1" class="ltx_Math" alttext="&lt;" display="inline"><mo>&lt;</mo></math>0.05), temporal reasoning (0.12), and
+knowledge update (0.26–0.39). These are precisely the abilities that
+require <em class="ltx_emph ltx_font_italic">architectural</em> solutions (supersession, bi-temporal
+modeling) rather than better retrieval. This pattern suggests that
+persistence semantics, not retrieval quality, is the primary bottleneck.</p>
+</div>
+<section id="S4.SS0.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">External validation from DeepMind.</h4>
+
+<div id="S4.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">The strongest external validation comes from DeepMind’s Cognitive
+Framework <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib6" title="" class="ltx_ref">6</a>]</cite>, a 32-page technical report
+proposing a 10-faculty cognitive taxonomy for measuring progress toward
+AGI. Their §7.5 Memory subdivides into Semantic, Episodic, Procedural,
+Prospective, and Forgetting sub-faculties. Crucially, they place Working
+Memory under §7.8 Executive Functions, <em class="ltx_emph ltx_font_italic">not</em> under Memory, on the
+explicit grounds that “working memory involves the coordination of
+multiple faculties including memory, attention, and sometimes reasoning.”
+This independently mirrors our <span class="ltx_text ltx_font_smallcaps">Intelligence</span>-versus-<span class="ltx_text ltx_font_smallcaps">Memory</span> split:
+DeepMind recognize that the colloquial term “memory” conflates runtime
+context with durable persistence, and structurally separate them. Their
+§7.5 opening paragraph states that “learning is focused on the
+acquisition of new knowledge, whereas memory is concerned with the
+ability to maintain that knowledge over time […] a failure to
+update semantic knowledge despite being able to successfully recall
+already stored knowledge would be considered a failure of learning,
+while forgetting information over time that was initially successfully
+learned would be a failure of memory.” This is the category error
+framed in the same terms as <a href="#S1" title="1 Introduction ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">1</span></a>, stated by a first-party
+industrial lab. The 10-faculty taxonomy compresses onto our four layers
+via shared persistence semantics: Perception, Generation, Attention,
+Working Memory, Reasoning, and Problem-Solving collapse to
+<span class="ltx_text ltx_font_smallcaps">Intelligence</span> (all ephemeral runtime); Semantic Memory maps to
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span>; Episodic, Prospective, and Forgetting map to <span class="ltx_text ltx_font_smallcaps">Memory</span>;
+Procedural Memory, Metacognition, and Executive Functions map to
+<span class="ltx_text ltx_font_smallcaps">Wisdom</span>. This compression is a simplification, not an exact mapping:
+Attention and Working Memory have distinct properties from Reasoning in
+DeepMind’s framework, and collapsing six faculties into <span class="ltx_text ltx_font_smallcaps">Intelligence</span>
+loses granularity that may matter for fine-grained capability evaluation. The “jagged profile” diagnostic <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib22" title="" class="ltx_ref">22</a>]</cite>
+complements this: monolithic agent architectures produce uneven cognitive
+capability distributions precisely because they conflate layers with
+fundamentally different persistence semantics.</p>
+</div>
+</section>
+<section id="S4.SS0.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Parallel community convergence (April 2026).</h4>
+
+<div id="S4.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Beyond the practitioner quotes cited above, the April 2026 landscape
+surfaced several independent systems converging on components of the
+four-layer thesis without coordinating. rohitg00’s LLM Wiki
+v2 <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib32" title="" class="ltx_ref">32</a>]</cite>, a gist forking Karpathy’s pattern,
+independently proposes confidence scoring with time-decay, explicit
+supersession, type-appropriate Ebbinghaus decay rates, and a four-tier
+consolidation pipeline, making it the closest informal statement of the
+thesis. Hermes Agent <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib26" title="" class="ltx_ref">26</a>]</cite> (Nous Research) ships
+the closest existing implementation of the <span class="ltx_text ltx_font_smallcaps">Wisdom</span>-layer consolidation
+loop: procedural skill documents written back from task execution in
+real time following the <span class="ltx_text ltx_font_typewriter">agentskills.io</span> open standard, though it
+lacks a bi-temporal substrate.
+Semantica <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib12" title="" class="ltx_ref">12</a>]</cite> and
+MinnsDB <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib21" title="" class="ltx_ref">21</a>]</cite> are the closest architectural cousins:
+both implement bi-temporal knowledge graphs (Semantica with Allen
+Interval Algebra for deterministic temporal consistency, MinnsDB with
+<span class="ltx_text ltx_font_typewriter">WHEN</span>/<span class="ltx_text ltx_font_typewriter">AS OF</span> query clauses), though neither separates
+persistence semantics per cognitive type.
+Frona <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib10" title="" class="ltx_ref">10</a>]</cite> is the first Rust-language peer,
+validating the choice of Rust for memory-layer engines.
+Papr’s schema-policy DSL <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib29" title="" class="ltx_ref">29</a>]</cite> provides
+vocabulary directly applicable to the <span class="ltx_text ltx_font_smallcaps">Wisdom</span> revision gate:
+declarative promotion predicates that decouple graph structure from
+resolution behavior. None of these systems provides the full four-layer
+decomposition; each addresses one or two components. The density of
+convergent work in a single month suggests that the architectural
+pattern is emerging independently across the community.</p>
+</div>
+</section>
+<section id="S4.SS0.SSS0.Px3" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Why four layers?</h4>
+
+<div id="S4.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">A natural question is whether the decomposition could use fewer or more
+layers. A three-layer model (dropping <span class="ltx_text ltx_font_smallcaps">Wisdom</span>) would merge behavioral
+directives with factual knowledge, but these require fundamentally
+different update mechanics: facts supersede via evidence, while directives
+require evidence-gated revision with stability tiers. To illustrate the
+failure mode concretely: in a merged K+W store, a sycophantic pattern
+(“always agree with the user’s architectural preferences”) could be
+promoted to anchor status because it is verifiable (the user did
+consistently prefer this) and source-attributed, bypassing the
+evidence-gated review that would catch it in a separate <span class="ltx_text ltx_font_smallcaps">Wisdom</span> layer.
+Conversely, a five-layer model (splitting <span class="ltx_text ltx_font_smallcaps">Knowledge</span> into factual and
+relational substrates) would add complexity without a corresponding
+difference in persistence semantics, as both subfactors still require
+supersession and provenance. The four-layer count is not a priori
+necessary. It is the minimum decomposition where each layer requires a
+<em class="ltx_emph ltx_font_italic">different</em> persistence mechanism: supersession, decay,
+revision-gating, and ephemerality respectively. An analogy from human
+cognition illustrates why merging <span class="ltx_text ltx_font_smallcaps">Knowledge</span> and <span class="ltx_text ltx_font_smallcaps">Wisdom</span> specifically
+is problematic: a student taking an exam uses consolidated skills
+(<span class="ltx_text ltx_font_smallcaps">Wisdom</span>, such as how to integrate or solve equations, which do not
+decay), factual knowledge (<span class="ltx_text ltx_font_smallcaps">Knowledge</span>, such as “Paris is the capital of
+France,” which supersedes if a capital moves but does not fade), episodic
+memories (<span class="ltx_text ltx_font_smallcaps">Memory</span>, such as what a teacher said last week, which decays
+unless rehearsed), and inference-time reasoning (<span class="ltx_text ltx_font_smallcaps">Intelligence</span>, the exam
+itself, which is ephemeral). Collapsing skills and facts into one layer
+would require a single update mechanism to handle both “<math id="S4.SS0.SSS0.Px3.p1.m1" class="ltx_Math" alttext="2+2=4" display="inline"><mrow><mrow><mn>2</mn><mo>+</mo><mn>2</mn></mrow><mo>=</mo><mn>4</mn></mrow></math>”
+(permanent, not subject to revision) and “prefer integration by parts for
+this class of problems” (durable but revisable when better techniques are
+learned). These are categorically different persistence requirements.</p>
+</div>
+<div id="S4.SS0.SSS0.Px3.p2" class="ltx_para">
+<p class="ltx_p">We note that grey literature (blog posts, tweets, GitHub repositories)
+constitutes a significant fraction of our references. This is an inherent
+property of the field’s pace: agent memory systems are evolving on a
+weekly cadence, and many of the most relevant contributions exist only as
+open-source repositories or practitioner posts. We cite peer-reviewed work
+where available and flag non-peer-reviewed sources explicitly.</p>
+</div>
+</section>
+</section>
+<section id="S5" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">5 </span>Companion Implementations</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">In order to demonstrate that the four-layer architectural separation is
+feasible, we contribute two companion implementations that realize the
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span> and <span class="ltx_text ltx_font_smallcaps">Memory</span> layers respectively.<span id="footnote8" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">8</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">8</sup>
+            <span class="ltx_tag ltx_tag_note">8</span>
+            
+            
+            
+            
+            
+            
+          The <span class="ltx_text ltx_font_smallcaps">Wisdom</span>
+layer materializes across multiple substrates: model weights (frozen
+wisdom from training), configuration files (user-curated rules loaded at
+session start), and promoted behavioral directives (a key-value store
+with stability-tier metadata and a revision log). <span class="ltx_text ltx_font_smallcaps">Intelligence</span> is the
+model itself.</span></span></span></p>
+</div>
+<section id="S5.SS0.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">knowledge-base</h4>
+
+<div id="S5.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">(<span class="ltx_text ltx_font_typewriter">knowledge-base</span>)<span id="footnote9" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">9</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">9</sup>
+              <span class="ltx_tag ltx_tag_note">9</span>
+              
+              
+              
+              
+              
+              
+            <a href="https://github.com/dutiona/knowledge-base" title="" class="ltx_ref">https://github.com/dutiona/knowledge-base</a></span></span></span>: a Python MCP server backed by SQLite
+with <span class="ltx_text ltx_font_typewriter">sqlite-vec</span> for vector search and FTS5 for full-text
+retrieval. It exposes 46 MCP tools covering the full lifecycle (ingestion,
+structure extraction, entity and relationship management, hybrid search
+with RRF fusion and stage-2 reranking, and conclusion tracking with
+supersession). Facts carry provenance metadata and support supersession: old
+claims are never deleted but linked to their successors. The system passes
+338+ tests.</p>
+</div>
+</section>
+<section id="S5.SS0.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">memory-engine</h4>
+
+<div id="S5.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">(<span class="ltx_text ltx_font_typewriter">memory-engine</span>)<span id="footnote10" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">10</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">10</sup>
+              <span class="ltx_tag ltx_tag_note">10</span>
+              
+              
+              
+              
+              
+              
+            <a href="https://github.com/dutiona/memory-engine" title="" class="ltx_ref">https://github.com/dutiona/memory-engine</a></span></span></span>: a Rust crate using SQLite for
+persistence, in-process HNSW for vector search, and Petgraph for graph
+traversal. It implements Ebbinghaus forgetting with configurable
+half-lives, bi-temporal fact storage (four timestamps per fact), scoped
+contexts for project isolation, and five consumer traits
+(<span class="ltx_text ltx_font_typewriter">EmbeddingProvider</span>, <span class="ltx_text ltx_font_typewriter">SummaryGenerator</span>,
+<span class="ltx_text ltx_font_typewriter">ConflictArbiter</span>, <span class="ltx_text ltx_font_typewriter">PersistenceClassifier</span>,
+<span class="ltx_text ltx_font_typewriter">Reranker</span>) that carry zero network or LLM dependencies, as all
+intelligence is consumer-provided. The engine also ships first-class
+prospective memory primitives (<span class="ltx_text ltx_font_typewriter">list_due</span>,
+<span class="ltx_text ltx_font_typewriter">next_due_time</span>, <span class="ltx_text ltx_font_typewriter">surfaced_at</span>) implementing time-based
+intention triggering <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib20" title="" class="ltx_ref">20</a>]</cite>, mapping directly
+onto DeepMind’s §7.5.4 Prospective Memory <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib6" title="" class="ltx_ref">6</a>]</cite>.
+The system passes 486 tests.</p>
+</div>
+<div id="S5.SS0.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">The architectural separation <em class="ltx_emph ltx_font_italic">is</em> the contribution, not the search
+quality of either system. These implementations demonstrate that
+<span class="ltx_text ltx_font_smallcaps">Knowledge</span> and <span class="ltx_text ltx_font_smallcaps">Memory</span> can be realized as separate systems with
+different persistence semantics, different update mechanics, and different
+ownership models, and that doing so is practical at the library level
+without requiring heavy infrastructure.</p>
+</div>
+<div id="S5.SS0.SSS0.Px2.p3" class="ltx_para">
+<p class="ltx_p">A notable architectural invariant distinguishes both implementations from
+every system surveyed in <a href="#S4" title="4 Convergence Evidence ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">4</span></a>: all core operations
+(decay computation, graph traversal, retrieval fusion, supersession
+bookkeeping, consolidation scheduling) use deterministic algorithms with
+zero LLM calls and zero network dependencies. LLM operations (entity
+extraction, fact validation, wisdom promotion) happen exclusively at the
+consumer layer, invoked by the calling agent with its own provider.
+Indeed, every competing system that performs consolidation or structured
+extraction requires LLM calls <em class="ltx_emph ltx_font_italic">inside</em> the memory system itself
+(Mastra’s Observer/Reflector agents, Google AOMA’s Gemini-based
+consolidation, claude-mem’s separate Claude session). Our LLM-free engine
+guarantees predictable latency, bounded memory footprint (<math id="S5.SS0.SSS0.Px2.p3.m1" class="ltx_Math" alttext="&lt;" display="inline"><mo>&lt;</mo></math>5 MB RAM),
+and offline operation.</p>
+</div>
+</section>
+<section id="S5.SS0.SSS0.Px3" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Pilot evaluation.</h4>
+<span id="footnote11" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">11</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">11</sup>
+          <span class="ltx_tag ltx_tag_note">11</span>
+          
+          
+          
+          
+          
+          
+        Experiment code and data: <a href="https://github.com/dutiona/papers-material" title="" class="ltx_ref">https://github.com/dutiona/papers-material</a>.</span></span></span>
+<div id="S5.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">In order to test whether the architectural separation changes observable
+outcomes, we ran a focused pilot on the BEAM benchmark’s 100K-token
+split <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib35" title="" class="ltx_ref">35</a>]</cite>. We selected the two ability categories
+where all systems score worst (contradiction resolution and temporal
+reasoning) and compared two conditions: <em class="ltx_emph ltx_font_italic">typed routing</em>, where an
+oracle classifier directs queries to <span class="ltx_text ltx_font_typewriter">knowledge-base</span> (supersession-aware) or <span class="ltx_text ltx_font_typewriter">memory-engine</span>
+(bi-temporal) based on the ground-truth BEAM category, and a <em class="ltx_emph ltx_font_italic">flat
+baseline</em>, where the same queries hit a single undifferentiated
+FTS5 store with no type distinction. Both conditions used the same
+local model (Gemma 4 26B) for generation and scoring, with 80 questions
+from 20 conversations per condition (<a href="#S5.T3" title="In Pilot evaluation. ‣ 5 Companion Implementations ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">table</span> <span class="ltx_text ltx_ref_tag">3</span></a>).</p>
+</div>
+<figure id="S5.T3" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 3: </span>BEAM pilot results (100K split, <math id="S5.T3.m2" class="ltx_Math" alttext="N=80" display="inline"><mrow><mi>N</mi><mo>=</mo><mn>80</mn></mrow></math> per condition). Typed
+routing to <span class="ltx_text ltx_font_typewriter">knowledge-base</span> or <span class="ltx_text ltx_font_typewriter">memory-engine</span> based on query type vs. a flat baseline.</figcaption>
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Category</span></td>
+<td class="ltx_td ltx_align_center ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Typed</span></td>
+<td class="ltx_td ltx_align_center ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Flat</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_center ltx_border_tt"><math id="S5.T3.m3" class="ltx_Math" alttext="\Delta" display="inline"><mi mathsize="90%" mathvariant="normal">Δ</mi></math></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text" style="font-size:90%;">Contradiction resolution</span></td>
+<td class="ltx_td ltx_align_center ltx_border_t"><span class="ltx_text" style="font-size:90%;">0.500</span></td>
+<td class="ltx_td ltx_align_center ltx_border_t"><span class="ltx_text" style="font-size:90%;">0.394</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_center ltx_border_t"><span class="ltx_text" style="font-size:90%;">+0.106</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text" style="font-size:90%;">Temporal reasoning</span></td>
+<td class="ltx_td ltx_align_center"><span class="ltx_text" style="font-size:90%;">0.425</span></td>
+<td class="ltx_td ltx_align_center"><span class="ltx_text" style="font-size:90%;">0.275</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text" style="font-size:90%;">+0.150</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Overall</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_t"><span class="ltx_text ltx_font_bold" style="font-size:90%;">0.463</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_t"><span class="ltx_text ltx_font_bold" style="font-size:90%;">0.334</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_center ltx_border_bb ltx_border_t"><span class="ltx_text ltx_font_bold" style="font-size:90%;">+0.128</span></td>
+</tr>
+</table>
+</figure>
+<div id="S5.SS0.SSS0.Px3.p2" class="ltx_para">
+<p class="ltx_p">Typed routing improves overall accuracy by +0.128 (46.3% vs. 33.4%,
+bootstrap 95% CI on <math id="S5.SS0.SSS0.Px3.p2.m1" class="ltx_Math" alttext="\Delta" display="inline"><mi mathvariant="normal">Δ</mi></math>: <math id="S5.SS0.SSS0.Px3.p2.m2" class="ltx_Math" alttext="[0.04,0.22]" display="inline"><mrow><mo stretchy="false">[</mo><mn>0.04</mn><mo>,</mo><mn>0.22</mn><mo stretchy="false">]</mo></mrow></math>, McNemar <math id="S5.SS0.SSS0.Px3.p2.m3" class="ltx_Math" alttext="p=0.035" display="inline"><mrow><mi>p</mi><mo>=</mo><mn>0.035</mn></mrow></math>).
+The largest gain is on temporal reasoning (+0.150), where the
+memory-engine’s bi-temporal filtering surfaces chronologically ordered
+facts that the flat store returns unordered. Contradiction resolution
+gains +0.106, as the knowledge-base’s supersession-aware retrieval filters
+stale claims. Also, a two-conversation comparison with a heuristic
+keyword-based router (instead of the oracle) reverses the typed advantage
+(<math id="S5.SS0.SSS0.Px3.p2.m4" class="ltx_Math" alttext="\Delta=-0.125" display="inline"><mrow><mi mathvariant="normal">Δ</mi><mo>=</mo><mrow><mo>−</mo><mn>0.125</mn></mrow></mrow></math>), confirming that routing accuracy is load-bearing:
+architectural separation helps only when queries reach the correct store.</p>
+</div>
+<div id="S5.SS0.SSS0.Px3.p3" class="ltx_para">
+<p class="ltx_p">The pilot has clear limitations: small sample (<math id="S5.SS0.SSS0.Px3.p3.m1" class="ltx_Math" alttext="N=80" display="inline"><mrow><mi>N</mi><mo>=</mo><mn>80</mn></mrow></math>), two categories
+only, no ablation separating routing from store semantics, FTS-only
+retrieval (no vector search), and a local 26B model for both generation
+and scoring. Nevertheless, the result is directionally consistent with the
+paper’s thesis: the abilities where flat stores fail worst are precisely
+those where typed persistence semantics provide measurable improvement.</p>
+</div>
+</section>
+</section>
+<section id="S6" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">6 </span>Discussion and Limitations</h2>
+
+<section id="S6.SS0.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Why this matters.</h4>
+
+<div id="S6.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Every system that persists information for AI agents must choose how to
+handle persistence semantics. The choice is often implicit and uniform
+(identical CRUD for all data types) but it is still a choice, and it
+produces predictable failures. The four-layer decomposition makes this
+choice explicit: facts get supersession, experiences get decay, behavioral
+patterns get evidence-gated revision, and reasoning is ephemeral. Making
+the choice explicit does not solve every problem in agent memory, but it
+prevents the category errors that currently plague the field.</p>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">The null hypothesis.</h4>
+
+<div id="S6.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">The strongest counter-argument to structured external memory comes from
+the practitioner community: “All you are doing is memory with extra steps
+and burning huge blocks of context to read all that memory. AI’s don’t
+improve, no matter what you put on disk.” This objection has two
+components. First, the empirical claim that external memory does not
+improve performance is falsified by existing benchmarks: Mastra’s
+Observational Memory <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib19" title="" class="ltx_ref">19</a>]</cite> reports 94.87% on LongMemEval
+where the baseline scores 33% (a near-3<math id="S6.SS0.SSS0.Px2.p1.m1" class="ltx_Math" alttext="\times" display="inline"><mo>×</mo></math> improvement). However,
+a recent community audit <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib30" title="" class="ltx_ref">30</a>]</cite> has revealed serious
+methodological issues: LoCoMo’s answer key is 6.4% factually incorrect,
+its LLM judge accepts 63% of intentionally wrong answers, and
+LongMemEval’s per-question context fits in a single window, allowing
+systems to bypass retrieval entirely. These findings render all prior
+LongMemEval and LoCoMo scores provisional. Nevertheless, the directional
+result stands: structured memory outperforms raw context.
+Mastra is a flat memory store, which raises a follow-up question: if a
+flat store achieves strong retrieval scores, why do we need layer
+separation? The answer is that these benchmarks
+test retrieval accuracy, not persistence correctness. A flat store can
+retrieve the right fact today, but it cannot handle the case where a fact
+was superseded yesterday and the old version should still be queryable for
+provenance. BEAM’s contradiction-resolution scores (<math id="S6.SS0.SSS0.Px2.p1.m2" class="ltx_Math" alttext="&lt;" display="inline"><mo>&lt;</mo></math>0.05 across all
+systems) measure precisely this capability, and there flat stores fail.</p>
+</div>
+<div id="S6.SS0.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Second, and more importantly, the “extra steps” objection is partially
+correct, but it is an argument <em class="ltx_emph ltx_font_italic">for</em> our architecture, not against
+it. Indeed, a flat, undifferentiated memory store where facts, preferences,
+and ephemeral observations use identical semantics <em class="ltx_emph ltx_font_italic">is</em> noise with
+extra steps. Thanks to layer-separated persistence semantics, each
+retrieval targets the correct substrate: knowledge queries return
+source-attributed facts, memory queries return decay-aware experiences, and
+wisdom is pre-loaded at session start without retrieval cost at all.</p>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px3" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Relationship to broader frameworks.</h4>
+
+<div id="S6.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p"><a href="#S6.T4" title="In Relationship to broader frameworks. ‣ 6 Discussion and Limitations ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">table</span> <span class="ltx_text ltx_ref_tag">4</span></a> positions the four-layer decomposition against CoALA and
+JEPA. The key column is “persistence distinction”: CoALA names the
+Knowledge/Memory boundary but does not operationalize it, while JEPA does
+not identify it as a concern.</p>
+</div>
+<figure id="S6.T4" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 4: </span>Gap analysis: how CoALA and JEPA handle each cognitive substrate
+versus the four-layer decomposition.</figcaption>
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_border_tt"></td>
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">CoALA</span></td>
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">JEPA</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold" style="font-size:90%;">Four-Layer</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Knowledge</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Semantic mem.</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">(no distinct</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">persistence)</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">In weights (lossy)</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">or buffer</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">(ephemeral)</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Supersession</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">+ provenance</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Memory</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Episodic mem.</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">(same persistence</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">as semantic)</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Short-Term Mem.</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">(unstructured</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">buffer)</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Ebbinghaus</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">+ bi-temporal</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Wisdom</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;"><span class="ltx_text" style="font-size:90%;">Procedural mem.</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">World Model</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">weights</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t" style="padding-bottom:4.0pt;">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Revision-gated</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">+ evidence</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text ltx_font_smallcaps" style="font-size:90%;">Intelligence</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text" style="font-size:90%;">Working mem.</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Configurator</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">+ Actor</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Ephemeral</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">orchestration</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left"><span class="ltx_text ltx_font_bold">Persistence</span></span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left"><span class="ltx_text ltx_font_bold">distinction</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">Named but not</span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left">operationalized</span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_t"><span class="ltx_text" style="font-size:90%;">Not identified</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_bb ltx_border_t">
+<span class="ltx_text" style="font-size:90%;">
+<span class="ltx_tabular ltx_align_top">
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left"><span class="ltx_text ltx_font_bold">Explicit</span></span></span>
+<span class="ltx_tr">
+<span class="ltx_td ltx_nopad_r ltx_align_left"><span class="ltx_text ltx_font_bold">per layer</span></span></span>
+</span></span><span class="ltx_text" style="font-size:90%;"></span>
+</td>
+</tr>
+</table>
+</figure>
+</section>
+<section id="S6.SS0.SSS0.Px4" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Limitations.</h4>
+
+<div id="S6.SS0.SSS0.Px4.p1" class="ltx_para">
+<p class="ltx_p">Despite the theoretical grounding and convergence evidence, this design
+comes with some limitations. First, this paper is a position paper: the
+companion implementations demonstrate feasibility, not superiority. We do
+not present large-scale empirical evaluation on standardized benchmarks,
+and that is deferred to future work. Second, the convergence evidence
+includes practitioner community signals (footnotes in
+<a href="#S4" title="4 Convergence Evidence ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">4</span></a>) that are not peer-reviewed. We include them as
+evidence of independent discovery, not as authority. Third, the <span class="ltx_text ltx_font_smallcaps">Knowledge</span>/<span class="ltx_text ltx_font_smallcaps">Wisdom</span> boundary remains a
+design choice: the same observation can produce entries in both layers
+(see the gradient-clipping example in <a href="#S3" title="3 The Four-Layer Decomposition ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">section</span> <span class="ltx_text ltx_ref_tag">3</span></a>), and a
+single-layer alternative with stability tiers is a viable simplification.
+Fourth, the four-layer decomposition is a design framework, not a formal
+model with provable properties. Its value lies in preventing category
+errors, not in mathematical guarantees.</p>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px5" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Future work.</h4>
+
+<div id="S6.SS0.SSS0.Px5.p1" class="ltx_para">
+<p class="ltx_p">Three directions follow directly. First, scaling the pilot evaluation
+(<a href="#S5.T3" title="In Pilot evaluation. ‣ 5 Companion Implementations ‣ The Missing Knowledge Layer in Cognitive Architectures for AI Agents" class="ltx_ref"><span class="ltx_text ltx_ref_tag">table</span> <span class="ltx_text ltx_ref_tag">3</span></a>) to the full BEAM benchmark at 1M and 10M tokens with
+a learned router (replacing the oracle classifier), testing whether
+architectural separation improves contradiction resolution and temporal
+reasoning scores at scale. Second, a memory-architecture-specific
+benchmark (MemArch-Bench) that tests supersession correctness,
+bi-temporal point-in-time accuracy, type-appropriate decay, and
+context-poisoning resistance, that is, architectural properties that no
+existing benchmark evaluates <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib35" title="" class="ltx_ref">35</a>]</cite>. The recent
+benchmark governance crisis <cite class="ltx_cite ltx_citemacro_cite">[<a href="#bib.bib30" title="" class="ltx_ref">30</a>]</cite>, which
+invalidated direct comparability of LongMemEval and LoCoMo scores across
+systems, makes this benchmark an urgent infrastructure need for the
+field. Third, a closed-loop memory-to-wisdom consolidation pipeline
+(DreamCycle) that promotes recurring patterns from <span class="ltx_text ltx_font_smallcaps">Memory</span> to
+<span class="ltx_text ltx_font_smallcaps">Wisdom</span> with full provenance tracking.</p>
+</div>
+</section>
+</section>
+<section id="S7" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">7 </span>Conclusion</h2>
+
+<div id="S7.p1" class="ltx_para">
+<p class="ltx_p">We have identified a missing <span class="ltx_text ltx_font_smallcaps">Knowledge</span> layer in the two most
+influential cognitive architecture frameworks for AI agents. CoALA names
+the Knowledge/Memory distinction but does not operationalize it with
+different persistence semantics. JEPA does not identify it as a concern at
+all. This gap produces a category error that is pervasive across the
+field: systems apply cognitive decay to facts, or treat facts and
+experiences with identical update mechanics. A four-layer decomposition
+(<span class="ltx_text ltx_font_smallcaps">Knowledge</span>, <span class="ltx_text ltx_font_smallcaps">Memory</span>, <span class="ltx_text ltx_font_smallcaps">Wisdom</span>, <span class="ltx_text ltx_font_smallcaps">Intelligence</span>) with distinct persistence
+semantics per layer resolves this error. Nine convergence points, from DeepMind’s Cognitive
+Framework to BEAM’s near-zero contradiction-resolution scores, validate
+that the gap is widely recognized across industrial-lab reports,
+published benchmarks, production systems, and practitioner projects. The
+architectural separation is feasible: companion implementations in Python
+(338+ tests) and Rust (486 tests) demonstrate it at the library level
+without heavy infrastructure.</p>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</section>
+<section id="bib" class="ltx_bibliography">
+<h2 class="ltx_title ltx_title_bibliography">References</h2>
+
+<ul class="ltx_biblist">
+      
+<li id="bib.bib1" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[1]</span>
+<span class="ltx_bibblock">
+AlbericByte: ArqonDB: Unified KV+vector+graph engine for agent memory.
+GitHub (2026), <a href="https://github.com/AlbericByte/ArqonDB" title="" class="ltx_ref">https://github.com/AlbericByte/ArqonDB</a>, rust. Causal DAG
+with temporal edges (uni-temporal validity intervals), state branching,
+custom LSM-tree + HNSW. Still conflates all cognitive layers into a single
+“agent state” abstraction.
+
+</span>
+</li>
+      
+<li id="bib.bib2" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[2]</span>
+<span class="ltx_bibblock">
+alibaizhanov: Mengram: Three-type memory extraction for LLMs. GitHub
+(2026), independent convergence on Tulving’s trichotomy
+(semantic/episodic/procedural) with separate extraction pipelines per type.
+
+</span>
+</li>
+      
+<li id="bib.bib3" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[3]</span>
+<span class="ltx_bibblock">
+Anthropic: Claude code memory architecture. Claude Code v2.1.59+ (2026), six
+memory subsystems with 4-type taxonomy (user/feedback/project/reference). No
+supersession, no temporal validity, no structured facts. Most widely deployed
+AI memory system.
+
+</span>
+</li>
+      
+<li id="bib.bib4" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[4]</span>
+<span class="ltx_bibblock">
+Bandaru, R.: Deep dive into Yann LeCun’s JEPA. GitHub Pages blog (2024),
+<a href="https://rohitbandaru.github.io/blog/2024/07/01/deep-dive-into-yann-lecuns-jepa.html" title="" class="ltx_ref">https://rohitbandaru.github.io/blog/2024/07/01/deep-dive-into-yann-lecuns-jepa.html</a>,
+identifies that JEPA’s critic is “trained from past states and subsequent
+intrinsic cost, retrieved from memory” — memory is load-bearing for the
+critic.
+
+</span>
+</li>
+      
+<li id="bib.bib5" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[5]</span>
+<span class="ltx_bibblock">
+Bjork, R.A.: Retrieval inhibition as an adaptive mechanism in human memory. In:
+Roediger, H.L., Craik, F.I.M. (eds.) Varieties of Memory and Consciousness:
+Essays in Honour of Endel Tulving, pp. 309–330. Lawrence Erlbaum Associates
+(1989)
+
+</span>
+</li>
+      
+<li id="bib.bib6" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[6]</span>
+<span class="ltx_bibblock">
+Burnell, R., Yamamori, Y., Firat, O., Olszewska, K., Hughes-Fitt, S., Kelly,
+O., Galatzer-Levy, I.R., Morris, M.R., Dafoe, A., Snyder, A.M., Goodman,
+N.D., Botvinick, M., Legg, S.: Measuring progress toward AGI: A cognitive
+framework. Tech. rep., Google DeepMind (March 2026),
+<a href="https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/measuring-progress-toward-agi/measuring-progress-toward-agi-a-cognitive-framework.pdf" title="" class="ltx_ref">https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/measuring-progress-toward-agi/measuring-progress-toward-agi-a-cognitive-framework.pdf</a>,
+10-faculty cognitive taxonomy. §7.5 Memory subdivides into
+Semantic/Episodic/Procedural/Prospective/Forgetting. Working Memory placed
+under §7.8 Executive Functions, not Memory. Independent validation of the
+category error diagnosis.
+
+</span>
+</li>
+      
+<li id="bib.bib7" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[7]</span>
+<span class="ltx_bibblock">
+Cheng, M., et al.: Sycophantic AI decreases prosocial intentions and promotes
+dependence. Science <span class="ltx_text ltx_font_bold">391</span>(6792) (2026). https://doi.org/10.1126/science.aec8352
+
+</span>
+</li>
+      
+<li id="bib.bib8" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[8]</span>
+<span class="ltx_bibblock">
+Chhikara, P., et al.: Mem0: Building production-ready AI agents with scalable
+long-term memory. arXiv preprint arXiv:2504.19413 (2025)
+
+</span>
+</li>
+      
+<li id="bib.bib9" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[9]</span>
+<span class="ltx_bibblock">
+Cohen, N.J., Squire, L.R.: Preserved learning and retention of
+pattern-analyzing skill in amnesia: Dissociation of knowing how and knowing
+that. Science <span class="ltx_text ltx_font_bold">210</span>(4466), 207–210 (1980)
+
+</span>
+</li>
+      
+<li id="bib.bib10" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[10]</span>
+<span class="ltx_bibblock">
+fronalabs: Frona: Self-hosted personal AI assistant.
+<a href="https://github.com/fronalabs/frona" title="" class="ltx_ref">https://github.com/fronalabs/frona</a> (2026), rust + SurrealDB. Two-tier
+memory: user-scoped + agent-scoped. First Rust peer-competitor.
+
+</span>
+</li>
+      
+<li id="bib.bib11" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[11]</span>
+<span class="ltx_bibblock">
+Gulli, A., Sauco, M.: Agentic AI: Design Patterns and Production-Ready
+Strategies for Building Intelligent Agents. Springer (2025), 424 pages.
+Google Office of CTO. Two-tier memory (context + vector store). No temporal
+model, no forgetting, no wisdom layer, no consumer abstraction.
+
+</span>
+</li>
+      
+<li id="bib.bib12" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[12]</span>
+<span class="ltx_bibblock">
+Hawksight-AI: Semantica: Multi-backend bi-temporal knowledge engine.
+<a href="https://github.com/Hawksight-AI/semantica" title="" class="ltx_ref">https://github.com/Hawksight-AI/semantica</a> (2026), rDF/OWL + property
+graphs + triple stores. W3C PROV-O provenance. Allen Interval Algebra for
+deterministic temporal consistency.
+
+</span>
+</li>
+      
+<li id="bib.bib13" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[13]</span>
+<span class="ltx_bibblock">
+Hu, Y., Liu, S., Yue, Y., Zhang, G., et al.: Memory in the age of AI agents:
+A survey — forms, functions and dynamics (2025)
+
+</span>
+</li>
+      
+<li id="bib.bib14" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[14]</span>
+<span class="ltx_bibblock">
+Jiang, D., Li, Y., Wei, S., Yang, J., Kishore, A., Zhao, A., Kang, D., Hu, X.,
+Chen, F., Li, Q., Li, B.: Anatomy of agentic memory: Taxonomy and empirical
+analysis of evaluation and system limitations. arXiv preprint
+arXiv:2602.19320 (2026)
+
+</span>
+</li>
+      
+<li id="bib.bib15" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[15]</span>
+<span class="ltx_bibblock">
+Karpathy, A.: LLM knowledge bases. X (Twitter) (April 2026), widely shared
+(millions of views). Six-component system: ingest, compilation, Q&amp;A, output
+loop, linting. Independent convergence toward Knowledge layer with no Memory,
+Wisdom, or temporal semantics.
+
+</span>
+</li>
+      
+<li id="bib.bib16" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[16]</span>
+<span class="ltx_bibblock">
+Latimer, C., Boschi, N., Neeser, A., Bartholomew, C., Srivastava, G., Wang, X.,
+Ramakrishnan, N.: Hindsight is 20/20: Building agent memory that retains,
+recalls, and reflects (2025), bEAM SOTA: 64.1% at 10M tokens. Five-level
+hierarchy. No forgetting, no bi-temporal, no supersession.
+
+</span>
+</li>
+      
+<li id="bib.bib17" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[17]</span>
+<span class="ltx_bibblock">
+LeCun, Y.: A path towards autonomous machine intelligence. OpenReview (2022),
+<a href="https://openreview.net/pdf?id=BZ5a1r-kVsf" title="" class="ltx_ref">https://openreview.net/pdf?id=BZ5a1r-kVsf</a>
+
+</span>
+</li>
+      
+<li id="bib.bib18" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[18]</span>
+<span class="ltx_bibblock">
+Lett, M.: Critical review of LeCun’s introductory JEPA paper. Medium blog
+(2024),
+<a href="https://medium.com/@malcolmlett/critical-review-of-lecuns-introductory-jepa-paper-f4e5e582caeb" title="" class="ltx_ref">https://medium.com/@malcolmlett/critical-review-of-lecuns-introductory-jepa-paper-f4e5e582caeb</a>,
+identifies: configurator undefined, System 1/2 mapping incorrect, H-JEPA
+incompatible with predictive coding.
+
+</span>
+</li>
+      
+<li id="bib.bib19" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[19]</span>
+<span class="ltx_bibblock">
+Mastra: Mastra observational memory. GitHub (2026),
+<a href="https://github.com/mastra-ai/mastra" title="" class="ltx_ref">https://github.com/mastra-ai/mastra</a>, compression-first memory: raw
+messages <math id="bib.bib19.m1" class="ltx_Math" alttext="\to" display="inline"><mo stretchy="false">→</mo></math> observations <math id="bib.bib19.m2" class="ltx_Math" alttext="\to" display="inline"><mo stretchy="false">→</mo></math> reflections. 94.87% on LongMemEval
+(GPT-5-mini), 84.23% with GPT-4o. Per-category: knowledge-update 96.2%,
+temporal-reasoning 95.5%, multi-session 87.2% (ceiling across all systems).
+No cross-session persistence, no supersession.
+
+</span>
+</li>
+      
+<li id="bib.bib20" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[20]</span>
+<span class="ltx_bibblock">
+McDaniel, M.A., Einstein, G.O.: Prospective memory: An overview and synthesis
+of an emerging field. Sage Publications (2007)
+
+</span>
+</li>
+      
+<li id="bib.bib21" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[21]</span>
+<span class="ltx_bibblock">
+Minns-ai: MinnsDB: Agentic database with bi-temporal graph.
+<a href="https://github.com/Minns-ai/MinnsDB" title="" class="ltx_ref">https://github.com/Minns-ai/MinnsDB</a> (2026), aGPL-3.0, Rust. Bi-temporal
+knowledge graph. MinnsQL with <span class="ltx_text ltx_font_typewriter">WHEN</span>/<span class="ltx_text ltx_font_typewriter">AS OF</span>. OWL vocabulary as
+metadata, not reasoning.
+
+</span>
+</li>
+      
+<li id="bib.bib22" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[22]</span>
+<span class="ltx_bibblock">
+Morris, M.R., Altman, D., Belfield, H., Goemans, A., Iqbal, H., Burnell, R.,
+Gabriel, I., Albanie, S., Dafoe, A.: Characterizing model jaggedness supports
+safety and usability. Tech. rep., Google DeepMind (January 2026), monolithic
+scores hide jagged capability profiles; principled decomposition required.
+
+</span>
+</li>
+      
+<li id="bib.bib23" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[23]</span>
+<span class="ltx_bibblock">
+Nelson, T.O.: Metamemory: A theoretical framework and new findings. In: Bower,
+G.H. (ed.) The Psychology of Learning and Motivation, vol. 26, pp. 125–173.
+Academic Press (1990)
+
+</span>
+</li>
+      
+<li id="bib.bib24" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[24]</span>
+<span class="ltx_bibblock">
+niloproject: Signet: Persistent cognition layer for AI coding agents.
+GitHub (2026), entity/aspect/attribute graph with partial supersession but
+uniform 0.95^days decay on all types.
+
+</span>
+</li>
+      
+<li id="bib.bib25" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[25]</span>
+<span class="ltx_bibblock">
+NornicDB: NornicDB: Cognitive graph and vector database for AI agents.
+GitHub (2026), three-tier cognitive decay: episodic 7-day, semantic 69-day,
+procedural 693-day half-life. Applies storage-level decay to factual
+knowledge.
+
+</span>
+</li>
+      
+<li id="bib.bib26" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[26]</span>
+<span class="ltx_bibblock">
+Nous Research: Hermes agent.
+<a href="https://github.com/NousResearch/hermes-agent" title="" class="ltx_ref">https://github.com/NousResearch/hermes-agent</a> (2026), five memory layers
+including Procedural Skill Documents following the <span class="ltx_text ltx_font_typewriter">agentskills.io</span>
+open standard. Closes experience-to-wisdom loop.
+
+</span>
+</li>
+      
+<li id="bib.bib27" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[27]</span>
+<span class="ltx_bibblock">
+ori-community: Ori mnemos v0.4: Six-layer retrieval with graph-aware
+forgetting. GitHub (2026), three-zone decay (identity 0.1x, knowledge 1.0x,
+ops 3.0x). ACT-R vitality, Tarjan structural protection. Still conflates all
+data types in one graph.
+
+</span>
+</li>
+      
+<li id="bib.bib28" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[28]</span>
+<span class="ltx_bibblock">
+Packer, C., Wooders, S., Lin, K., Fang, V., Patil, S.G., Stoica, I., Gonzalez,
+J.E.: MemGPT: Towards LLMs as operating systems (2023), virtual context
+management for LLMs via OS-inspired memory hierarchy. Letta V1 rearchitecture
+(2025) introduces Context Repositories and tiered memory.
+
+</span>
+</li>
+      
+<li id="bib.bib29" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[29]</span>
+<span class="ltx_bibblock">
+Papr-ai: Papr python SDK: Schema-policy memory engine.
+<a href="https://github.com/Papr-ai/papr-pythonSDK" title="" class="ltx_ref">https://github.com/Papr-ai/papr-pythonSDK</a> (2026), schema-policy DSL
+decorators for memory operations. First-class LLM callouts at
+constraint-firing time.
+
+</span>
+</li>
+      
+<li id="bib.bib30" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[30]</span>
+<span class="ltx_bibblock">
+r/AIMemory community: Proposal: A real benchmark for long-term AI memory
+systems. <a href="https://www.reddit.com/r/AIMemory/comments/1sgvsxb/" title="" class="ltx_ref">https://www.reddit.com/r/AIMemory/comments/1sgvsxb/</a> (April
+2026), memPalace audit: reported 96.6% LongMemEval collapsed to 66.8%;
+LoCoMo answer key 6.4% wrong; LLM judge accepts 63% of incorrect answers.
+
+</span>
+</li>
+      
+<li id="bib.bib31" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[31]</span>
+<span class="ltx_bibblock">
+Rasmussen, P., Paliychuk, P., Beauvais, T.: Zep: A temporal knowledge graph
+architecture for agent memory (2025), bi-temporal model (4 timestamps per
+edge). Episode-to-fact extraction.
+
+</span>
+</li>
+      
+<li id="bib.bib32" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[32]</span>
+<span class="ltx_bibblock">
+rohitg00: LLM wiki v2.
+<a href="https://gist.github.com/rohitg00/2067ab416f7bbe447c1977edaaa681e2" title="" class="ltx_ref">https://gist.github.com/rohitg00/2067ab416f7bbe447c1977edaaa681e2</a>
+(2026), fork of Karpathy pattern. Confidence scoring with time-decay,
+supersession, Ebbinghaus forgetting, four-tier consolidation. Closest
+informal statement of the four-layer thesis.
+
+</span>
+</li>
+      
+<li id="bib.bib33" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[33]</span>
+<span class="ltx_bibblock">
+Saboo, S.: Always-on memory agent. GitHub (GoogleCloudPlatform/generative-ai)
+(2026),
+<a href="https://github.com/GoogleCloudPlatform/generative-ai/tree/main/gemini/agents/always-on-memory-agent" title="" class="ltx_ref">https://github.com/GoogleCloudPlatform/generative-ai/tree/main/gemini/agents/always-on-memory-agent</a>,
+mIT. No vector DB. LLM-driven memory organization in SQLite. 30-minute
+consolidation loops generating meta-insights. Independently validates the
+consolidation-as-first-class-operation pattern.
+
+</span>
+</li>
+      
+<li id="bib.bib34" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[34]</span>
+<span class="ltx_bibblock">
+Sumers, T.R., Yao, S., Narasimhan, K., Griffiths, T.L.: Cognitive architectures
+for language agents. Transactions on Machine Learning Research (TMLR)
+(2024), <a href="https://arxiv.org/abs/2309.02427" title="" class="ltx_ref">https://arxiv.org/abs/2309.02427</a>
+
+</span>
+</li>
+      
+<li id="bib.bib35" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[35]</span>
+<span class="ltx_bibblock">
+Tavakoli, M., Salemi, A., Ye, C., Abdalla, M., Zamani, H., Mitchell, J.R.:
+BEAM: Beyond a million tokens: Benchmarking and enhancing long-term memory
+in LLMs. arXiv preprint arXiv:2510.27246 (2026)
+
+</span>
+</li>
+      
+<li id="bib.bib36" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[36]</span>
+<span class="ltx_bibblock">
+Tulving, E.: Episodic and semantic memory. In: Tulving, E., Donaldson, W.
+(eds.) Organization of Memory, pp. 381–403. Academic Press (1972)
+
+</span>
+</li>
+      
+<li id="bib.bib37" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[37]</span>
+<span class="ltx_bibblock">
+Yu, Y., Yao, L., Xie, Y., Tan, Q., Feng, J., Li, Y., Wu, L.: Agentic memory:
+Learning unified long-term and short-term memory management for large
+language model agents (2026), ebbinghaus forgetting curve adaptation for AI
+memory.
+
+</span>
+</li>
+      
+<li id="bib.bib38" class="ltx_bibitem">
+<span class="ltx_tag ltx_tag_bibitem">[38]</span>
+<span class="ltx_bibblock">
+Zhang, W., et al.: A-mem: Agentic memory for LLM agents (2025)
+
+</span>
+</li>
+    
+</ul>
+</section>
+</article>
+</div>
+<footer class="ltx_page_footer">
+</footer>
+</div>
+</body>
+</html>
