@@ -21,10 +21,18 @@ Personal academic website of **Michaël Roynard** (image processing, modern C++,
 | Path | What |
 |---|---|
 | `_bibliography/papers.bib` | publications (jekyll-scholar). `selected={true}` → homepage; `bibtex_show={true}` → Cite button |
+| `_bibliography/preprints.bib` | **GENERATED** — self-archived preprints (rendered on `/publications/`). Do not hand-edit |
+| `papers/<slug>/` | **GENERATED** — arxiv-style HTML of self-archived papers (static passthrough). Do not hand-edit |
 | `_data/cv.yml` | CV (rendered by `_pages/cv.md`). Also `coauthors.yml`, `repositories.yml`, `socials.yml` |
 | `_pages/*.md` | site pages (about, cv, publications, projects, repositories, teaching) |
 | `_projects/*.md`, `_news/*.md` | project cards, news items |
 | `assets/img/photo_perso.png`, `assets/pdf/shortcv.pdf` | personal assets |
+
+> **`papers/` and `_bibliography/preprints.bib` are produced by the `dutiona/papers`
+> publishing pipeline** (`tools/publish`, `make publish`). They are committed output:
+> review the diff and push, but never hand-edit — the next `make publish` overwrites them.
+> Papers live at top-level `/papers/<slug>/` (not under `assets/`) so PurgeCSS scans them
+> and the sitemap includes them; their CSS is self-contained so the global purge can't strip it.
 
 ## Load-bearing gotchas — do not "fix" these away
 

@@ -18,3 +18,14 @@ nav_order: 2
 {% bibliography %}
 
 </div>
+
+## Preprints &amp; self-archived
+
+Author-archived versions, rendered in full as arxiv-style HTML. Generated from the
+<a href="https://github.com/dutiona/papers">papers</a> pipeline — see each entry's <b>HTML</b> link.
+
+<div class="publications">
+
+{% bibliography -f preprints %}
+
+</div>
