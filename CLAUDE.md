@@ -18,15 +18,15 @@ Personal academic website of **Michaël Roynard** (image processing, modern C++,
 
 ## Where content lives (everything else is theme)
 
-| Path | What |
-|---|---|
-| `_bibliography/papers.bib` | publications (jekyll-scholar). `selected={true}` → homepage; `bibtex_show={true}` → Cite button |
-| `_bibliography/preprints.bib` | **GENERATED** — self-archived preprints (rendered on `/publications/`). Do not hand-edit |
-| `papers/<slug>/` | **GENERATED** — arxiv-style HTML of self-archived papers (static passthrough). Do not hand-edit |
-| `_data/cv.yml` | CV (rendered by `_pages/cv.md`). Also `coauthors.yml`, `repositories.yml`, `socials.yml` |
-| `_pages/*.md` | site pages (about, cv, publications, projects, repositories, teaching) |
-| `_projects/*.md`, `_news/*.md` | project cards, news items |
-| `assets/img/photo_perso.png`, `assets/pdf/shortcv.pdf` | personal assets |
+| Path                                                   | What                                                                                            |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `_bibliography/papers.bib`                             | publications (jekyll-scholar). `selected={true}` → homepage; `bibtex_show={true}` → Cite button |
+| `_bibliography/preprints.bib`                          | **GENERATED** — self-archived preprints (rendered on `/publications/`). Do not hand-edit        |
+| `papers/<slug>/`                                       | **GENERATED** — arxiv-style HTML of self-archived papers (static passthrough). Do not hand-edit |
+| `_data/cv.yml`                                         | CV (rendered by `_pages/cv.md`). Also `coauthors.yml`, `repositories.yml`, `socials.yml`        |
+| `_pages/*.md`                                          | site pages (about, cv, publications, projects, repositories, teaching)                          |
+| `_projects/*.md`, `_news/*.md`                         | project cards, news items                                                                       |
+| `assets/img/photo_perso.png`, `assets/pdf/shortcv.pdf` | personal assets                                                                                 |
 
 > **`papers/` and `_bibliography/preprints.bib` are produced by the `dutiona/papers`
 > publishing pipeline** (`tools/publish`, `make publish`). They are committed output:
@@ -37,7 +37,7 @@ Personal academic website of **Michaël Roynard** (image processing, modern C++,
 ## Load-bearing gotchas — do not "fix" these away
 
 - **`deploy.yml` runs `touch _site/.nojekyll`** — REQUIRED. Without it, GitHub Pages re-runs safe-mode Jekyll on the already-built `gh-pages` (al-folio's plugins are disallowed there) and the live site **404s**. Never remove that line.
-- **`_config.yml`: `baseurl: ""`** (empty) — this is a *user* site served at the domain root, not a project subpath. `url: https://dutiona.github.io`.
+- **`_config.yml`: `baseurl: ""`** (empty) — this is a _user_ site served at the domain root, not a project subpath. `url: https://dutiona.github.io`.
 - **`_data/socials.yml` keys must be jekyll-socials' exact names** (`email`, `github_username`, `x_username`, `scholar_userid`, `orcid_id`, `stackoverflow_id`, `cv_pdf`, `rss_icon`). An unrecognized key (e.g. `twitter`) **crashes the build** via the plugin's custom-social path.
 - Comments and analytics are off by design; OpenGraph + schema.org are on (`serve_og_meta` / `serve_schema_org: true`) for discoverability.
 
