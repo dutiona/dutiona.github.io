@@ -2,7 +2,7 @@
 layout: page
 title: Blackmagic
 description: Metaprogramming library for C++.
-img: 
+img:
 importance: 2
 category: work
 ---

@@ -2,7 +2,7 @@
 layout: page
 title: H2OFastTests
 description: Minimalist unitesting suite library.
-img: 
+img:
 importance: 2
 category: fun
 ---
